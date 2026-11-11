@@ -108,7 +108,8 @@ if prompt:
     with st.chat_message("user"):
         st.markdown(prompt)
 
-        with st.chat_message("assistant"):
+       
+    with st.chat_message("assistant"):
         try:
             with st.spinner("Thinking..."):
                 client = genai.Client(
@@ -121,9 +122,7 @@ if prompt:
                         types.Content(
                             role="model" if msg["role"] == "assistant" else "user",
                             parts=[
-                                types.Part.from_text(
-                                    text=msg["content"]
-                                )
+                                types.Part.from_text(text=msg["content"])
                             ]
                         )
                         for msg in st.session_state.messages
