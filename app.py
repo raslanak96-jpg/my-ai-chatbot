@@ -1,6 +1,7 @@
 
 import streamlit as st
-from ollama import chat
+from google import genai
+from google.genai import types
 import bcrypt
 
 st.set_page_config(
@@ -72,15 +73,16 @@ if "messages" not in st.session_state:
 # Sidebar
 with st.sidebar:
     st.title("🤖 My AI")
-    st.caption("Powered by Ollama")
+    st.caption("Powered by Google Gemini")
 
     if st.button("➕ New Chat", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
     st.divider()
-    st.write("Model: Llama 3.2 (1B)")
-    st.success("Local AI")
+    st.write("Model: Gemini")
+    st.success("Online AI")
+
 
 # Main interface
 st.title("My AI Assistant")
@@ -109,13 +111,21 @@ if prompt:
     with st.chat_message("assistant"):
         try:
             with st.spinner("Thinking..."):
-                response = chat(
-                    model="llama3.2:1b",
-                    messages=st.session_state.messages
-                )
+                client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
-            answer = response.message.content
-            st.markdown(answer)
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=[
+        types.Content(
+            role="model" if msg["role"] == "assistant" else "user",
+            parts=[types.Part.from_text(text=msg["content"])]
+        )
+        for msg in st.session_state.messages
+    ]
+)
+
+answer = response.text or "No response generated."
+st.markdown(answer)
 
             st.session_state.messages.append({
                 "role": "assistant",
