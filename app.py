@@ -113,21 +113,27 @@ if prompt:
         try:
             with st.spinner("Thinking..."):
                 client = genai.Client(
-                    api_key=st.secrets["GEMINI_API_KEY"]
-                )
+    api_key=st.secrets["GEMINI_API_KEY"],
+    http_options=types.HttpOptions(timeout=20000)
+)
 
                 response = client.models.generate_content(
-                    model="gemini-3.8-flash",
-                    contents=[
-                        types.Content(
-                            role="model" if msg["role"] == "assistant" else "user",
-                            parts=[
-                                types.Part.from_text(text=msg["content"])
-                            ]
-                        )
-                        for msg in st.session_state.messages
-                    ]
-                )
+    model="gemini-3.8-flash",
+    contents=[
+        types.Content(
+            role="model" if msg["role"] == "assistant" else "user",
+            parts=[
+                types.Part.from_text(text=msg["content"])
+            ]
+        )
+        for msg in st.session_state.messages[-10:]
+    ],
+    config=types.GenerateContentConfig(
+        max_output_tokens=500
+    )
+)
+                            
+                
 
                 answer = response.text or "No response generated."
 
